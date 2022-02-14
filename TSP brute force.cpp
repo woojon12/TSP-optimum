@@ -1,4 +1,5 @@
 #include <iostream>
+#include "Directed Graph.h"
 using namespace std;
 
 /*
@@ -18,16 +19,14 @@ int pow(int num, int p)
     return temp;
 }
 
-/* ÃÊ¹İ ¼öµµÄÚµå
+/* ì´ˆë°˜ ìˆ˜ë„ì½”ë“œ
 int TSP() {
   int i;
   int returnvalue;
-
   for(i = 0; i < TNOvertex; ++i) {
     if( ivertex had not been visited
       && W[current][i] != 0) {
       ivertex has been visited; 0b0001;
-
       returnvalue = TSP();
       if(cm[0b1111][current] > W[current][i] + returnvalue)
       cm[0b1111][current] = W[current][i] + returnvalue;
@@ -37,100 +36,8 @@ int TSP() {
 }
 */
 
-#define defN 11
 int N;
 
-template <typename T>
-void nxnArrayAssign(T**& arr, int row, int col)
-{
-    arr = new T * [row];
-
-    for (int i = 0; i < row; ++i)
-        arr[i] = new T[col];
-}
-
-template <typename T>
-void nxnArrayDelete(T**& arr, int row)
-{
-    for (int i = 0; i < row; ++i)
-        delete[] arr[i];
-
-    delete[] arr;
-}
-
-class way_memory {
-    int** distance_memory;
-    int*** path_memory;
-    bool** allow_refer;
-
-    friend void TSP(int current, int W[][defN], way_memory& M, int memorizebit);
-    friend int main();
-
-public:
-    way_memory(int N) {
-        nxnArrayAssign(distance_memory, 1 << N, N);
-        nxnArrayAssign(allow_refer, 1 << N, N);
-
-        for (int i = 0; i < (1 << N); ++i)
-            for (int j = 0; j < N; ++j)
-                distance_memory[i][j] = 0;
-
-        for (int i = 0; i < (1 << N); ++i)
-            for (int j = 0; j < N; ++j)
-                allow_refer[i][j] = false;
-
-        path_memory = new int** [1 << N];
-        for (int i = 0; i < (1 << N); ++i)
-            path_memory[i] = new int* [N];
-        for (int i = 0; i < (1 << N); ++i)
-            for (int j = 0; j < N; ++j)
-                path_memory[i][j] = new int[N - 1];
-
-        for (int i = 0; i < (1 << N); ++i)
-            for (int j = 0; j < N; ++j)
-                for (int k = 0; k < N - 1; ++k)
-                    path_memory[i][j][k] = -1;
-    }
-
-    way_memory(const way_memory& w) {
-        nxnArrayAssign(distance_memory, 1 << N, N);
-        nxnArrayAssign(allow_refer, 1 << N, N);
-
-        for (int i = 0; i < (1 << N); ++i)
-            for (int j = 0; j < N; ++j)
-                distance_memory[i][j] = w.distance_memory[i][j];
-
-        for (int i = 0; i < (1 << N); ++i)
-            for (int j = 0; j < N; ++j)
-                allow_refer[i][j] = w.allow_refer[i][j];
-
-        path_memory = new int** [1 << N];
-        for (int i = 0; i < (1 << N); ++i)
-            path_memory[i] = new int* [N];
-        for (int i = 0; i < (1 << N); ++i)
-            for (int j = 0; j < N; ++j)
-                path_memory[i][j] = new int[N - 1];
-
-        for (int i = 0; i < (1 << N); ++i)
-            for (int j = 0; j < N; ++j)
-                for (int k = 0; k < N - 1; ++k)
-                    path_memory[i][j][k] = w.path_memory[i][j][k];
-    }
-
-    ~way_memory() {
-        nxnArrayDelete(distance_memory, 1 << N);
-        nxnArrayDelete(allow_refer, 1 << N);
-
-        for (int i = 0; i < (1 << N); ++i)
-            for (int j = 1; j < N; ++j) //¿ØÁö ¸ğ¸£°Ú´Âµ¥ ¿©±â j¸¦ 0ÀÌ ¾Æ´Ï°í 1ÀÌ¶ó°í ÇØ¾ß ·±Å¸ÀÓ ¿À·ù°¡ ¾È³²
-                delete[] path_memory[i][j];
-
-        for (int i = 0; i < (1 << N); ++i)
-            delete[] path_memory[i];
-
-        delete[] path_memory;
-    }
-};
 
 bool ivertex_had_not_been_visited(int& i, int& memorizebit)
 {
@@ -150,7 +57,7 @@ bool is_bit_all_on(int memorizebit)
     return memorizebit == (1 << N) - 1;
 }
 
-#define start 0 //Áö±İÀº ¼øÈ¸¶ó¼­ ¾îµğ¼­ ½ÃÀÛÇÏµç ¹«»ó°ü
+#define start 0 //ì§€ê¸ˆì€ ìˆœíšŒë¼ì„œ ì–´ë””ì„œ ì‹œì‘í•˜ë“  ë¬´ìƒê´€
 void TSP(int current, int W[][defN], way_memory& wm, int memorizebit) {
     int i;
 
@@ -170,10 +77,10 @@ void TSP(int current, int W[][defN], way_memory& wm, int memorizebit) {
             wm.distance_memory[memorizebit][current] = W[current][start];
         }
         else
-            wm.distance_memory[memorizebit][current] = 1000000; //È¤½Ã ¸¶Áö¸·¿¡ ±æ ¾øÀ¸¸é Å»¶ô½ÃÅ°±â À§ÇØ Å« °ª
+            wm.distance_memory[memorizebit][current] = 1000000; //í˜¹ì‹œ ë§ˆì§€ë§‰ì— ê¸¸ ì—†ìœ¼ë©´ íƒˆë½ì‹œí‚¤ê¸° ìœ„í•´ í° ê°’
         wm.path_memory[memorizebit][current][N - 2] = current;
-        //»ı°¢ÇØº¸´Ï ¹«Á¶°ÇÀÌ³×. ½ÃÀÛÁöÁ¡¸¸ Á¤ÇØÁö¸é ÀÌ [1111][°¢ ÁöÁ¡]Àº ¹«Á¶°Ç
-        //½ÃÀÛÁöÁ¡À¸·Î °¡´Â °ªÀÓ
+        //ìƒê°í•´ë³´ë‹ˆ ë¬´ì¡°ê±´ì´ë„¤. ì‹œì‘ì§€ì ë§Œ ì •í•´ì§€ë©´ ì´ [1111][ê° ì§€ì ]ì€ ë¬´ì¡°ê±´
+        //ì‹œì‘ì§€ì ìœ¼ë¡œ ê°€ëŠ” ê°’ì„
         return;
     }
 
@@ -205,27 +112,132 @@ void TSP(int current, int W[][defN], way_memory& wm, int memorizebit) {
 }
 
 /*
-Àç±ÍÇÔ¼ö´Â if + return¿Í for·Î ±¸¼º.
-forÀº ²À ÀÖ¾îµµ µÇ´Â °Ç ¾Æ´Ï¸ç
-if´Â for À§¿¡µµ ¾Æ·¡¿¡µµ ÀÖÀ» ¼ö ÀÖÀ½.
-¾Ë°í¸®Áò¿¡ µû¶ó if´Â µÎ °³ ÀÌ»óÀÌ µÉ ¼ö ÀÖÀ½.
-
-±×¸®°í Àç±ÍÇÔ¼ö°¡ ´õ ±í¼÷È÷ µé¾î°¡¸é¼­ ´äÀÌ ½×ÀÌ°í ½×¿©
-¸¶Áö¸· Àç±ÍÇÔ¼ö¿¡¼­ ´äÀ» ÀúÀåÇÏ´Â °æ¿ì°¡ ÀÖ´Â°¡ÇÏ¸é
-(ÀÌ °æ¿ì ÃÖÁ¾°á°ú¿Í °ü·ÃµÈ º¯¼ö¸¦ ÀÎÀÚ·Î °è¼Ó ³Ñ±â°í
-Àç±ÍÇÔ¼öÀÇ °¢ ³¡¿¡¼­ ´õ Á¤´ä¿¡ °¡±î¿î °É °è¼Ó ±× º¯¼ö¿¡ µ¤¾î¾º¿ò)
-ÃÖ°í·Î ±í¼÷È÷ Àç±ÍÇÔ¼ö µé¾î°¬´Ù°¡ ´Ù½Ã µÇµ¹¾Æ¿À¸é¼­
-¹İÈ¯ÇÏ´Â °ªÀÌ ½×ÀÌ°í ½×¿© ¸¶Áö¸· ¹İÈ¯°ªÀÌ ´äÀÌ µÇ´Â °É·Îµµ ¸¸µé ¼ö ÀÖ´Ù.
-(ÀÌ °æ¿ì ÃÖÁ¾°á°ú¿Í °ü·ÃµÈ º¯¼ö¸¦ ¹İÈ¯ÇÏ´Â ½ÄÀÎµ¥
-¾Æ·§Àç±ÍÇÔ¼ö¸¦ È£ÃâÇÑ À­Àç±ÍÇÔ¼ö ÀÔÀå¿¡¼­ ºÃÀ» ¶§
-¾Æ·§³ğÀÌ ÀÌ¹Ì °¢ÀÚÀÇ ³¡¿¡¼­ ÃÖ¼±ÀÇ °á°ú°¡ ¹İÈ¯µÇµµ·Ï ÇÏ°í
-ÀÚ±â´Â ±×°É Àû¿ëÇÑ ÃÖ¼±ÀÇ °ªÀ» ¶Ç ¹İÈ¯ÇÏ´Â ½Ä. ÀÌ°Ô °è¼ÓµÇ¸é ¸¶Áö¸· ¹İÈ¯ÀÌ Á¤´ä.)
-¿©ÅÂ±îÁö µÑ Áß ÇÏ³ª·Î¸¸ ¸¸µé¾î¾ß µÇ´Â °æ¿ì´Â ³ª´Â µüÈ÷ ¸ø º½.
-ÈÄÀÚ´Â µüÈ÷ Á¤´äÀ» ÀúÀåÇÒ ÀÎ½ºÅÏ½º¸¦ ¸¸µéÁö ¾Ê¾Æµµ µÈ´Ù. º°·Î ÀåÁ¡Àº ¾Æ´ÏÁö¸¸,
-±×³É Áï¼®¿¡¼­ cout << ÇÔ¼ö() << endl; ÀÌ·¸°Ô ÃÖÁ¾°á°ú Ãâ·ÂÇØµµ µÈ´Ù´Â °Å.
-
-À§ ÇÔ¼öÀÇ °æ¿ì¿£ ÀüÀÚÀÓ.
+ì¬ê·€í•¨ìˆ˜ëŠ” if + returnì™€ forë¡œ êµ¬ì„±.
+forì€ ê¼­ ìˆì–´ë„ ë˜ëŠ” ê±´ ì•„ë‹ˆë©°
+ifëŠ” for ìœ„ì—ë„ ì•„ë˜ì—ë„ ìˆì„ ìˆ˜ ìˆìŒ.
+ì•Œê³ ë¦¬ì¦˜ì— ë”°ë¼ ifëŠ” ë‘ ê°œ ì´ìƒì´ ë  ìˆ˜ ìˆìŒ.
+ê·¸ë¦¬ê³  ì¬ê·€í•¨ìˆ˜ê°€ ë” ê¹Šìˆ™íˆ ë“¤ì–´ê°€ë©´ì„œ ë‹µì´ ìŒ“ì´ê³  ìŒ“ì—¬
+ë§ˆì§€ë§‰ ì¬ê·€í•¨ìˆ˜ì—ì„œ ë‹µì„ ì €ì¥í•˜ëŠ” ê²½ìš°ê°€ ìˆëŠ”ê°€í•˜ë©´
+(ì´ ê²½ìš° ìµœì¢…ê²°ê³¼ì™€ ê´€ë ¨ëœ ë³€ìˆ˜ë¥¼ ì¸ìë¡œ ê³„ì† ë„˜ê¸°ê³ 
+ì¬ê·€í•¨ìˆ˜ì˜ ê° ëì—ì„œ ë” ì •ë‹µì— ê°€ê¹Œìš´ ê±¸ ê³„ì† ê·¸ ë³€ìˆ˜ì— ë®ì–´ì”Œì›€)
+ìµœê³ ë¡œ ê¹Šìˆ™íˆ ì¬ê·€í•¨ìˆ˜ ë“¤ì–´ê°”ë‹¤ê°€ ë‹¤ì‹œ ë˜ëŒì•„ì˜¤ë©´ì„œ
+ë°˜í™˜í•˜ëŠ” ê°’ì´ ìŒ“ì´ê³  ìŒ“ì—¬ ë§ˆì§€ë§‰ ë°˜í™˜ê°’ì´ ë‹µì´ ë˜ëŠ” ê±¸ë¡œë„ ë§Œë“¤ ìˆ˜ ìˆë‹¤.
+(ì´ ê²½ìš° ìµœì¢…ê²°ê³¼ì™€ ê´€ë ¨ëœ ë³€ìˆ˜ë¥¼ ë°˜í™˜í•˜ëŠ” ì‹ì¸ë°
+ì•„ë«ì¬ê·€í•¨ìˆ˜ë¥¼ í˜¸ì¶œí•œ ìœ—ì¬ê·€í•¨ìˆ˜ ì…ì¥ì—ì„œ ë´¤ì„ ë•Œ
+ì•„ë«ë†ˆì´ ì´ë¯¸ ê°ìì˜ ëì—ì„œ ìµœì„ ì˜ ê²°ê³¼ê°€ ë°˜í™˜ë˜ë„ë¡ í•˜ê³ 
+ìê¸°ëŠ” ê·¸ê±¸ ì ìš©í•œ ìµœì„ ì˜ ê°’ì„ ë˜ ë°˜í™˜í•˜ëŠ” ì‹. ì´ê²Œ ê³„ì†ë˜ë©´ ë§ˆì§€ë§‰ ë°˜í™˜ì´ ì •ë‹µ.)
+ì—¬íƒœê¹Œì§€ ë‘˜ ì¤‘ í•˜ë‚˜ë¡œë§Œ ë§Œë“¤ì–´ì•¼ ë˜ëŠ” ê²½ìš°ëŠ” ë‚˜ëŠ” ë”±íˆ ëª» ë´„.
+í›„ìëŠ” ë”±íˆ ì •ë‹µì„ ì €ì¥í•  ì¸ìŠ¤í„´ìŠ¤ë¥¼ ë§Œë“¤ì§€ ì•Šì•„ë„ ëœë‹¤. ë³„ë¡œ ì¥ì ì€ ì•„ë‹ˆì§€ë§Œ,
+ê·¸ëƒ¥ ì¦‰ì„ì—ì„œ cout << í•¨ìˆ˜() << endl; ì´ë ‡ê²Œ ìµœì¢…ê²°ê³¼ ì¶œë ¥í•´ë„ ëœë‹¤ëŠ” ê±°.
+ìœ„ í•¨ìˆ˜ì˜ ê²½ìš°ì—” ì „ìì„.
 */
+
+void TSP_directed(int current, graph& g, way_memory& wm, int memorizebit) {
+    int i;
+
+    memorizebit += 1 << current;
+
+    if (wm.allow_refer[memorizebit][current]) {
+        /*int i = the_number_of_bit_is_on(memorizebit);
+        for(; i < N - 1; ++i)
+          wm.path_memory[memorizebit][current][i]*/
+        return;
+    }
+
+    if (is_bit_all_on(memorizebit))
+    {
+        wm.allow_refer[memorizebit][current] = true;
+        if (g.findWeight(current, start) != cost()) {
+            wm.distance_memory[memorizebit][current] = g.findWeight(current, start);
+        }
+        else
+            wm.distance_memory[memorizebit][current] = cost(); //í˜¹ì‹œ ë§ˆì§€ë§‰ì— ê¸¸ ì—†ìœ¼ë©´ íƒˆë½ì‹œí‚¤ê¸° ìœ„í•´ í° ê°’
+        wm.path_memory[memorizebit][current][N - 2] = current;
+        //ìƒê°í•´ë³´ë‹ˆ ë¬´ì¡°ê±´ì´ë„¤. ì‹œì‘ì§€ì ë§Œ ì •í•´ì§€ë©´ ì´ [1111][ê° ì§€ì ]ì€ ë¬´ì¡°ê±´
+        //ì‹œì‘ì§€ì ìœ¼ë¡œ ê°€ëŠ” ê°’ì„
+        return;
+    }
+
+    for (i = 0; i < N; ++i) {
+        if (ivertex_had_not_been_visited(i, memorizebit)
+            && g.findWeight(current, i) != cost()) {
+            //ivertex has been visited;
+            //returnvalue = TSP(i, W, wm, memorizebit);
+            TSP_directed(i, g, wm, memorizebit);
+
+            if (wm.distance_memory[memorizebit][current] > g.findWeight(current, i) + wm.distance_memory[memorizebit + (1 << i)][i]) {
+                wm.distance_memory[memorizebit][current]
+                = g.findWeight(current, i) + wm.distance_memory[memorizebit + (1 << i)][i];
+
+                int j;
+                int index = the_number_of_bit_is_on(memorizebit) - 1;
+                for (j = N - 2; j >= index; --j) {
+                    wm.path_memory[memorizebit][current][j] = wm.path_memory[memorizebit + (1 << i)][i][j];
+                }
+                wm.path_memory[memorizebit][current][j] = current;
+            }
+        }
+    }
+
+    wm.allow_refer[memorizebit][current] = true;
+
+    return;
+}
+
+//ì•„ë˜ í•¨ìˆ˜ëŠ” í˜„ì¬ include í•œ edge í´ë˜ìŠ¤ê°€ ë°©í–¥ ê·¸ë˜í”„ë¡œì„œ ë™ì‘í•˜ê³  ìˆì–´ êµ¬ë¶„ì˜ ì˜ë¯¸ê°€ ì—†ìŒ.
+//edge í´ë˜ìŠ¤ë¥¼ ë¬´ë°©í–¥ ê·¸ë˜í”„ë¡œì„œ ë™ì‘í•˜ê²Œ ë§Œë“ ë‹¤ë©´ ì•„ë˜ í•¨ìˆ˜ë§Œ ì˜ ë™ì‘í•  ê²ƒìœ¼ë¡œ ì˜ˆìƒ
+void TSP_undirected(int current, graph& g, way_memory& wm, int memorizebit) {
+    int i;
+
+    memorizebit += 1 << current;
+
+    if (wm.allow_refer[memorizebit][current]) {
+        /*int i = the_number_of_bit_is_on(memorizebit);
+        for(; i < N - 1; ++i)
+          wm.path_memory[memorizebit][current][i]*/
+        return;
+    }
+
+    if (is_bit_all_on(memorizebit))
+    {
+        wm.allow_refer[memorizebit][current] = true;
+        if (g.findWeight_undirected(current, start) != cost()) {
+            wm.distance_memory[memorizebit][current] = g.findWeight_undirected(current, start);
+        }
+        else
+            wm.distance_memory[memorizebit][current] = cost(); //í˜¹ì‹œ ë§ˆì§€ë§‰ì— ê¸¸ ì—†ìœ¼ë©´ íƒˆë½ì‹œí‚¤ê¸° ìœ„í•´ í° ê°’
+        wm.path_memory[memorizebit][current][N - 2] = current;
+        //ìƒê°í•´ë³´ë‹ˆ ë¬´ì¡°ê±´ì´ë„¤. ì‹œì‘ì§€ì ë§Œ ì •í•´ì§€ë©´ ì´ [1111][ê° ì§€ì ]ì€ ë¬´ì¡°ê±´
+        //ì‹œì‘ì§€ì ìœ¼ë¡œ ê°€ëŠ” ê°’ì„
+        return;
+    }
+
+    for (i = 0; i < N; ++i) {
+        if (ivertex_had_not_been_visited(i, memorizebit)
+            && g.findWeight_undirected(current, i) != cost()) {
+            //ivertex has been visited;
+            //returnvalue = TSP(i, W, wm, memorizebit);
+            TSP_undirected(i, g, wm, memorizebit);
+
+            if (wm.distance_memory[memorizebit][current] > g.findWeight_undirected(current, i) + wm.distance_memory[memorizebit + (1 << i)][i]) {
+                wm.distance_memory[memorizebit][current]
+                = g.findWeight_undirected(current, i) + wm.distance_memory[memorizebit + (1 << i)][i];
+
+                int j;
+                int index = the_number_of_bit_is_on(memorizebit) - 1;
+                for (j = N - 2; j >= index; --j) {
+                    wm.path_memory[memorizebit][current][j] = wm.path_memory[memorizebit + (1 << i)][i][j];
+                }
+                wm.path_memory[memorizebit][current][j] = current;
+            }
+        }
+    }
+
+    wm.allow_refer[memorizebit][current] = true;
+
+    return;
+}
+
 
 int main() {
     cout << "program start" << endl;
@@ -234,21 +246,20 @@ int main() {
     /*
     int **W;
     nxnArrayAssign(W, N, N);
-
     for(int i = 0; i < N; ++i)
       for(int j = 0; j < N; ++j) {
         cin >> W[i][j];
       }
     */
 
-    /*
+    
     int W[4][4] = { {0, 10, 15, 20},
                     {5, 0, 9, 10},
                     {6, 13, 0, 12},
                     {8, 8, 9, 0}
                   };
-                  */
-
+                  
+                  
     /*
     int W[6][6] = {
         0, 64, 378, 519, 434, 200,
@@ -261,7 +272,7 @@ int main() {
     */
 
     /*
-    int W[15][15] = { //´äÀº 1194
+    int W[15][15] = { //ë‹µì€ 1194
       {0, 141, 134, 152, 173, 289, 326, 329, 285, 401, 388, 366, 343, 305, 276},
                 {141, 0, 152, 150, 153, 312, 354, 313, 249, 324, 300, 272, 247, 201, 176},
                 {134, 152, 0, 24,  48,  168, 210, 197, 153, 280, 272, 257, 237, 210, 181 },
@@ -280,7 +291,8 @@ int main() {
                   };
                   */
 
-    int W[11][11] = { //°æ·Î´Â 0-7-4-3-9-5-2-6-1-10-8-0, °Å¸®´Â 253
+    /*
+    int W[11][11] = { //ê²½ë¡œëŠ” 0-7-4-3-9-5-2-6-1-10-8-0, ê±°ë¦¬ëŠ” 253
         {0, 29, 20, 21, 16, 31, 100, 12, 4, 31, 18},
         {29, 0, 15, 29, 28, 40, 72, 21, 29, 41, 12},
         {20, 15, 0, 15, 14, 25, 81, 9, 23, 27, 13},
@@ -293,26 +305,31 @@ int main() {
         {31, 41, 27, 13, 16, 3, 99, 25, 35, 0, 38},
         {18, 12, 13, 25, 22, 37, 84, 13, 18, 38, 0}
     };
+    */
+    
 
+    graph g(N, W);
     way_memory wm(N);
 
     int memorizebit = 0;
 
 
-    //½ÃÀÛÀº ¾Æ¹«·¸°Ô³ª 0¹øÀ¸·Î Àâ°í ½ÃÀÛ
+    //ì‹œì‘ì€ ì•„ë¬´ë ‡ê²Œë‚˜ 0ë²ˆìœ¼ë¡œ ì¡ê³  ì‹œì‘
 
-    //¸¸¾à ¿øÁ¡¿¡ µµÂøÇÏ¸é Áö±İ±îÁö ¿Ô´ø °æ·Î °Å²Ù·Î °¡¸é¼­ °¡ÁßÄ¡ ±â¾ï¹è¿­ °»½Å.
-    //ÀÌ¹Ì ¹è¿­¿¡ ¹¹ µé¾îÀÖ´Â °æ¿ì ´õ ÀÛÀº ÂÊÀÌ ÀÌ±ä´Ù.
+    //ë§Œì•½ ì›ì ì— ë„ì°©í•˜ë©´ ì§€ê¸ˆê¹Œì§€ ì™”ë˜ ê²½ë¡œ ê±°ê¾¸ë¡œ ê°€ë©´ì„œ ê°€ì¤‘ì¹˜ ê¸°ì–µë°°ì—´ ê°±ì‹ .
+    //ì´ë¯¸ ë°°ì—´ì— ë­ ë“¤ì–´ìˆëŠ” ê²½ìš° ë” ì‘ì€ ìª½ì´ ì´ê¸´ë‹¤.
 
-    //±×·¸°Ô ¸ğµç °æ·Î Å½»ö ÈÄ 0-1[00010][1], 0-2[00100][2], 0-3[01000][3], 0-4[16][4] Áß¿¡¼­ °¡Àå ÂªÀº ³ğÀÌ ÃÖÁ¾ ½Â¸®.
-    TSP(start, W, wm, memorizebit);
+    //ê·¸ë ‡ê²Œ ëª¨ë“  ê²½ë¡œ íƒìƒ‰ í›„ 0-1[00010][1], 0-2[00100][2], 0-3[01000][3], 0-4[16][4] ì¤‘ì—ì„œ ê°€ì¥ ì§§ì€ ë†ˆì´ ìµœì¢… ìŠ¹ë¦¬.
+    TSP_directed(start, g, wm, memorizebit);
 
     cout << start << " - ";
     for (int i = 0 ; i < N - 1; ++i)
         cout << wm.path_memory[1][start][i] << " - ";
     cout << start << endl;
 
-    cout << wm.distance_memory[0b0001][start] << endl; //ÃÖ´Ü°Å¸®´Â ¿©±â¿¡ ÀúÀåµÇÀÖÀ½
+    cout << wm.distance_memory[0b0001][start] << endl; //ìµœë‹¨ê±°ë¦¬ëŠ” ì—¬ê¸°ì— ì €ì¥ë˜ìˆìŒìŒ
+
+    g.showEdges();
 
     //nxnArrayDelete(W, N);
     return 0;
