@@ -1,6 +1,8 @@
 #pragma once
 #include <iostream>
-class graph;
+
+namespace direc{class graph;}
+namespace undirec{class graph;}
 
 /*
 무한의 개념을 확립하려고 만든 클래스인데 어쩌다보니
@@ -20,7 +22,8 @@ public:
   cost() : absoluteInf(true) {}
   cost(int weight) : weight(weight), absoluteInf(false) {}
 
-  friend class graph;
+  friend class direc::graph;
+  friend class undirec::graph;
 
   friend bool operator<(cost, cost);
   friend bool operator>(cost, cost);
@@ -83,6 +86,7 @@ cost operator+(cost c1, cost c2)
 
 std::ostream& operator<<(std::ostream& o, cost& c)
 {
+  if(c.absoluteInf) {o << "Infinite"; return o;}
   o << c.weight;
   return o;
 }

@@ -8,7 +8,7 @@ using namespace std;
 
 #define defN 6
 
-namespace direc {
+namespace undirec {
 
 template <typename T>
 void nxnArrayAssign(T**& arr, int row, int col)
@@ -33,7 +33,7 @@ class vertex {
   bool visited;
 
   friend class direc::graph;
-  //friend class undirec::graph;
+  friend class undirec::graph;
 
   public:
   vertex() : visited(false) {}
@@ -138,13 +138,12 @@ int operator==(edge e1, edge e2)
     if(e1.weight == e2.weight) return 1;
     return -1;
   }
-  /*
   if(e1.departure == e2.destination
   && e1.destination == e2.departure) {
     if(e1.weight == e2.weight) return 1;
     return -1;
   }
-  */
+
   return 0;
 }
 
@@ -344,7 +343,7 @@ class graph {
   {
     int N = Vertices.size();
     for(int i = 0; i < N; ++i)
-      if(Vertices[i] == v) return i;
+      if(Vertices.at(i) == v) return i;
     
     return -1;
   }
@@ -352,7 +351,7 @@ class graph {
   //include 한 edge 클래스가 방향 그래프로서 동작하고 있다면 아래 함수를 굳이 쓰지 않아도 됨
 //그러나 edge 클래스를 무방향 그래프로서 동작하게 만들거나(Undirected Graph.h)
 //주어지는 그래프가 무방향 그래프로서 입력된다면 아래 함수만 잘 동작함
-void TSP_directed(int current, way_memory& wm, int memorizebit) {
+void TSP_undirected(int current, way_memory& wm, int memorizebit) {
     int i;
     static bool firstexecute = true;
     static int start;
@@ -373,8 +372,8 @@ void TSP_directed(int current, way_memory& wm, int memorizebit) {
     if (is_bit_all_on(memorizebit, vertices))
     {
         wm.allow_refer[memorizebit][current] = true;
-        if (findWeight(vtxat(current), vtxat(start)) != cost()) {
-            wm.distance_memory[memorizebit][current] = findWeight(vtxat(current), vtxat(start));
+        if (findWeight_undirected(vtxat(current), vtxat(start)) != cost()) {
+            wm.distance_memory[memorizebit][current] = findWeight_undirected(vtxat(current), vtxat(start));
         }
         else
             wm.distance_memory[memorizebit][current] = cost(); //혹시 마지막에 길 없으면 탈락시키기 위해 큰 값
@@ -385,13 +384,13 @@ void TSP_directed(int current, way_memory& wm, int memorizebit) {
     }
 
     for (i = 0; i < vertices; ++i) {
-      cost iweight = findWeight(vtxat(current), vtxat(i));
+      cost iweight = findWeight_undirected(vtxat(current), vtxat(i));
 
         if (ivertex_had_not_been_visited(i, memorizebit)
             && iweight != cost()) {
             //ivertex has been visited;
             //returnvalue = TSP(i, W, wm, memorizebit);
-            TSP_directed(i, wm, memorizebit);
+            TSP_undirected(i, wm, memorizebit);
 
             if (wm.distance_memory[memorizebit][current] > iweight + wm.distance_memory[memorizebit + (1 << i)][i]) {
                 wm.distance_memory[memorizebit][current]
@@ -413,7 +412,7 @@ void TSP_directed(int current, way_memory& wm, int memorizebit) {
 }
 
 //이젠 순회가 아니므로 시작 지점이 중요함
-void TSP_directed_path(int current, way_memory& wm, int memorizebit) {
+void TSP_undirected_path(int current, way_memory& wm, int memorizebit) {
     int i;
     static bool firstexecute = true;
     static int vertices;
@@ -446,12 +445,12 @@ void TSP_directed_path(int current, way_memory& wm, int memorizebit) {
     }
 
     for (i = 0; i < vertices; ++i) {
-      cost iweight = findWeight(vtxat(current), vtxat(i));
+      cost iweight = findWeight_undirected(vtxat(current), vtxat(i));
         if (ivertex_had_not_been_visited(i, memorizebit)
             && iweight != cost()) {
             //ivertex has been visited;
             //returnvalue = TSP(i, W, wm, memorizebit);
-            TSP_directed_path(i, wm, memorizebit);
+            TSP_undirected_path(i, wm, memorizebit);
 
             if (wm.distance_memory[memorizebit][current] > iweight + wm.distance_memory[memorizebit + (1 << i)][i]) {
                 wm.distance_memory[memorizebit][current]

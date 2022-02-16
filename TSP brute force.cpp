@@ -1,5 +1,7 @@
 #include <iostream>
+#include <cmath>
 #include "Directed Graph.h"
+#include "Undirected Graph.h"
 using namespace std;
 
 /*
@@ -37,36 +39,16 @@ int TSP() {
 */
 
 int N;
+int start = 0;
 
 
-bool ivertex_had_not_been_visited(int& i, int& memorizebit)
-{
-    if (memorizebit & (1 << i)) return false;
-    return true;
-}
-
-int the_number_of_bit_is_on(const int& memorizebit) {
-    int result = 0;
-    for (int k = 0; memorizebit >= (1 << k); ++k)
-        if (memorizebit & (1 << k)) ++result;
-    return result;
-}
-
-bool is_bit_all_on(int memorizebit)
-{
-    return memorizebit == (1 << N) - 1;
-}
-
-#define start 0 //지금은 순회라서 어디서 시작하든 무상관
+/*
 void TSP(int current, int W[][defN], way_memory& wm, int memorizebit) {
     int i;
 
     memorizebit += 1 << current;
 
     if (wm.allow_refer[memorizebit][current]) {
-        /*int i = the_number_of_bit_is_on(memorizebit);
-        for(; i < N - 1; ++i)
-          wm.path_memory[memorizebit][current][i]*/
         return;
     }
 
@@ -110,6 +92,7 @@ void TSP(int current, int W[][defN], way_memory& wm, int memorizebit) {
 
     return;
 }
+*/
 
 /*
 재귀함수는 if + return와 for로 구성.
@@ -132,116 +115,23 @@ if는 for 위에도 아래에도 있을 수 있음.
 위 함수의 경우엔 전자임.
 */
 
-void TSP_directed(int current, graph& g, way_memory& wm, int memorizebit) {
-    int i;
-
-    memorizebit += 1 << current;
-
-    if (wm.allow_refer[memorizebit][current]) {
-        /*int i = the_number_of_bit_is_on(memorizebit);
-        for(; i < N - 1; ++i)
-          wm.path_memory[memorizebit][current][i]*/
-        return;
-    }
-
-    if (is_bit_all_on(memorizebit))
-    {
-        wm.allow_refer[memorizebit][current] = true;
-        if (g.findWeight(current, start) != cost()) {
-            wm.distance_memory[memorizebit][current] = g.findWeight(current, start);
-        }
-        else
-            wm.distance_memory[memorizebit][current] = cost(); //혹시 마지막에 길 없으면 탈락시키기 위해 큰 값
-        wm.path_memory[memorizebit][current][N - 2] = current;
-        //생각해보니 무조건이네. 시작지점만 정해지면 이 [1111][각 지점]은 무조건
-        //시작지점으로 가는 값임
-        return;
-    }
-
-    for (i = 0; i < N; ++i) {
-        if (ivertex_had_not_been_visited(i, memorizebit)
-            && g.findWeight(current, i) != cost()) {
-            //ivertex has been visited;
-            //returnvalue = TSP(i, W, wm, memorizebit);
-            TSP_directed(i, g, wm, memorizebit);
-
-            if (wm.distance_memory[memorizebit][current] > g.findWeight(current, i) + wm.distance_memory[memorizebit + (1 << i)][i]) {
-                wm.distance_memory[memorizebit][current]
-                = g.findWeight(current, i) + wm.distance_memory[memorizebit + (1 << i)][i];
-
-                int j;
-                int index = the_number_of_bit_is_on(memorizebit) - 1;
-                for (j = N - 2; j >= index; --j) {
-                    wm.path_memory[memorizebit][current][j] = wm.path_memory[memorizebit + (1 << i)][i][j];
-                }
-                wm.path_memory[memorizebit][current][j] = current;
-            }
-        }
-    }
-
-    wm.allow_refer[memorizebit][current] = true;
-
-    return;
-}
-
-//아래 함수는 현재 include 한 edge 클래스가 방향 그래프로서 동작하고 있어 구분의 의미가 없음.
-//edge 클래스를 무방향 그래프로서 동작하게 만든다면 아래 함수만 잘 동작할 것으로 예상
-void TSP_undirected(int current, graph& g, way_memory& wm, int memorizebit) {
-    int i;
-
-    memorizebit += 1 << current;
-
-    if (wm.allow_refer[memorizebit][current]) {
-        /*int i = the_number_of_bit_is_on(memorizebit);
-        for(; i < N - 1; ++i)
-          wm.path_memory[memorizebit][current][i]*/
-        return;
-    }
-
-    if (is_bit_all_on(memorizebit))
-    {
-        wm.allow_refer[memorizebit][current] = true;
-        if (g.findWeight_undirected(current, start) != cost()) {
-            wm.distance_memory[memorizebit][current] = g.findWeight_undirected(current, start);
-        }
-        else
-            wm.distance_memory[memorizebit][current] = cost(); //혹시 마지막에 길 없으면 탈락시키기 위해 큰 값
-        wm.path_memory[memorizebit][current][N - 2] = current;
-        //생각해보니 무조건이네. 시작지점만 정해지면 이 [1111][각 지점]은 무조건
-        //시작지점으로 가는 값임
-        return;
-    }
-
-    for (i = 0; i < N; ++i) {
-        if (ivertex_had_not_been_visited(i, memorizebit)
-            && g.findWeight_undirected(current, i) != cost()) {
-            //ivertex has been visited;
-            //returnvalue = TSP(i, W, wm, memorizebit);
-            TSP_undirected(i, g, wm, memorizebit);
-
-            if (wm.distance_memory[memorizebit][current] > g.findWeight_undirected(current, i) + wm.distance_memory[memorizebit + (1 << i)][i]) {
-                wm.distance_memory[memorizebit][current]
-                = g.findWeight_undirected(current, i) + wm.distance_memory[memorizebit + (1 << i)][i];
-
-                int j;
-                int index = the_number_of_bit_is_on(memorizebit) - 1;
-                for (j = N - 2; j >= index; --j) {
-                    wm.path_memory[memorizebit][current][j] = wm.path_memory[memorizebit + (1 << i)][i][j];
-                }
-                wm.path_memory[memorizebit][current][j] = current;
-            }
-        }
-    }
-
-    wm.allow_refer[memorizebit][current] = true;
-
-    return;
-}
-
-
 int main() {
     cout << "program start" << endl;
     N = defN;//cin >> N;
+
+    int directed;
+    cout << "입력한 그래프가 방향 그래프(directed Graph), 무방향 그래프(undirected Graph) 중 무엇?" << endl;
+    cout << "(1) 방향 그래프" << endl;
+    cout << "(2) 무방향 그래프" << endl;
+    cout << ">> ";
+    cin >> directed;
+
+    int cp;
+    cout << "순회(cycle/circuit)? 경로(path)? 어느 걸 찾기?" << endl;
+    cout << "(1) 최단 순회(회로)" << endl;
+    cout << "(2) 최단 경로" << endl;
+    cout << ">> ";
+    cin >> cp;
 
     /*
     int **W;
@@ -252,15 +142,15 @@ int main() {
       }
     */
 
-    
+    /*
     int W[4][4] = { {0, 10, 15, 20},
                     {5, 0, 9, 10},
                     {6, 13, 0, 12},
                     {8, 8, 9, 0}
-                  };
+                  };*/
                   
                   
-    /*
+    
     int W[6][6] = {
         0, 64, 378, 519, 434, 200,
         64, 0,318,455,375,164,
@@ -269,7 +159,7 @@ int main() {
         434,375,265,223,0,273,
         200,164,344,428,273,0
     };
-    */
+    
 
     /*
     int W[15][15] = { //답은 1194
@@ -306,31 +196,156 @@ int main() {
         {18, 12, 13, 25, 22, 37, 84, 13, 18, 38, 0}
     };
     */
-    
 
-    graph g(N, W);
-    way_memory wm(N);
+    int **pW;
+    N = sqrt(sizeof(W) / sizeof(int));
+
+    pW = new int*[N];
+    for(int i = 0; i < N; ++i)
+      pW[i] = new int[N];
+
+    for(int i = 0; i < N; ++i)
+      for(int j = 0; j < N; ++j)
+        pW[i][j] = W[i][j];
+      
+    //정적 배열을 동적 배열화 시키는 법. 왜 이걸 못 떠올렸지.
+
+    
+    undirec::graph g;
+
+    {
+    using namespace undirec;
+    /*
+    g.push(edge(0, 1, 1));
+    g.push(edge(1, 2, 1)); g.push(edge(1, 8, 3));
+    g.push(edge(2, 3, 1));
+
+    g.push(edge(0, 4, 1));
+    //g.push(edge(1, ?, 1));
+    g.push(edge(2, 5, 1));
+    g.push(edge(3, 6, 1));
+
+    g.push(edge(4, 5, 2));
+    g.push(edge(5, 6, 1));
+
+    g.push(edge(4, 7, 1));
+    g.push(edge(5, 9, 1));
+    g.push(edge(6, 10, 1));
+
+    g.push(edge(7, 8, 1));
+    g.push(edge(8, 9, 1));
+    g.push(edge(9, 10, 1));
+
+    g.push(edge(7, 11, 1));
+    g.push(edge(8, 12, 1));
+    g.push(edge(9, 13, 1));
+    g.push(edge(10, 14, 1));
+    */
+    g.push(edge(11, 12, 1));
+    g.push(edge(12, 13, 1));
+    g.push(edge(13, 14, 1)); //g.push(edge(13, 20, 3));
+    
+    g.push(edge(11, 15, 1)); g.push(edge(15, 16, 10));
+    g.push(edge(12, 16, 1)); g.push(edge(16, 17, 5));
+    g.push(edge(14, 17, 1));
+    
+    g.push(edge(15, 18, 1));
+    g.push(edge(16, 19, 1));
+    g.push(edge(17, 21, 1));
+    
+    g.push(edge(18, 19, 1));
+    g.push(edge(19, 20, 1));
+    g.push(edge(20, 21, 1)); g.push(edge(20, 24, 10));
+    
+    g.push(edge(18, 22, 1));
+    g.push(edge(19, 23, 1));
+    g.push(edge(21, 25, 1));
+
+    g.push(edge(22, 23, 1));
+    g.push(edge(23, 24, 1));
+    g.push(edge(24, 25, 1));
+    
+    }
 
     int memorizebit = 0;
+    start = 0;
+    int outmembit = 1 << start;
 
+    if(directed == 1 && cp == 1){
+      using namespace direc;
+      graph g(N, pW);
+      way_memory wm(N);
+      g.TSP_directed(start, wm, memorizebit);
+      g.result_print(wm, start, true, N);
+    }
 
-    //시작은 아무렇게나 0번으로 잡고 시작
+    else if(directed == 1 && cp == 2){
+      using namespace direc;
+      graph g(N, pW);
+      cout << "시작 지점은 어디로? (그래프 입력 상 정점 번호 기준)" << endl;
+      cout << "-1을 입력할 시 모든 곳을 시작점으로 잡은 결과를 다 출력" << endl;
+      cin >> start;
+      
+      if(start == -1) {
+        for(int startf = 0; startf < N; ++startf) {
+            way_memory wm(N);
+            memorizebit = 0;
+            g.TSP_directed_path(startf, wm, memorizebit);
+            g.result_print(wm, startf, false, N);
+            cout << "---------------------------------------" << endl;
+          }
+        }
+        else {
+          way_memory wm(N);
 
-    //만약 원점에 도착하면 지금까지 왔던 경로 거꾸로 가면서 가중치 기억배열 갱신.
-    //이미 배열에 뭐 들어있는 경우 더 작은 쪽이 이긴다.
+          start = g.vertexindex(start);
+          if(start == -1) {cout << "그런 넘버를 가진 정점이 없습니다." << endl; return 0;}
+          g.TSP_directed_path(start, wm, memorizebit);
+          g.result_print(wm, start, false, N);
+        }
+    }
 
-    //그렇게 모든 경로 탐색 후 0-1[00010][1], 0-2[00100][2], 0-3[01000][3], 0-4[16][4] 중에서 가장 짧은 놈이 최종 승리.
-    TSP_directed(start, g, wm, memorizebit);
+    else if(directed == 2 && cp == 1){
+      using namespace undirec;
+      N = g.allVerticesCount(); //graph g(N, W);
+      way_memory wm(N);
+      g.TSP_undirected(start, wm, memorizebit);
+      g.result_print(wm, start, true, N);
+    }
 
-    cout << start << " - ";
-    for (int i = 0 ; i < N - 1; ++i)
-        cout << wm.path_memory[1][start][i] << " - ";
-    cout << start << endl;
+    else if(directed == 2 && cp == 2){
+      using namespace undirec;
+      
+      int wherestart;
+      cout << "시작 지점은 어디로? (그래프 입력 상 정점 번호 기준)" << endl;
+      cout << "-1를 입력할 시 모든 곳을 시작점으로 잡은 결과를 다 출력" << endl;
+      cin >> wherestart;
+        N = g.allVerticesCount();
+        if(wherestart == -1) {
+        for(int startf = 0; startf < N; ++startf) {
+            way_memory wm(N);
+            memorizebit = 0;
+            g.TSP_undirected_path(startf, wm, memorizebit);
+            g.result_print(wm, startf, false, N);
+            cout << "---------------------------------------" << endl;
+          }
+        }
+        else {
+          way_memory wm(N);
+          start = wherestart;
+          start = g.vertexindex(start);
+          if(start == -1) {cout << "그런 넘버를 가진 정점이 없습니다." << endl; return 0;}
+          g.TSP_undirected_path(start, wm, memorizebit);
+          g.result_print(wm, start, false, N);
+        }
+    }
 
-    cout << wm.distance_memory[0b0001][start] << endl; //최단거리는 여기에 저장되있음음
-
-    g.showEdges();
-
-    //nxnArrayDelete(W, N);
     return 0;
 }
+
+//TODO : Vertices를 set으로 구현해서 자동으로 순차정렬
+//TODO : 방향 그래프, 무방향 그래프를 중복 없이 통합
+//아이디어로는 그냥 그래프 클래스에 direc::edge, undirec::edge 둘 다 벡터 만들고
+//뭘로 다룰지는 bool 인자로 하나 받아서 구분하거나
+//template 해서 그래프를 아예 graph<direc::edge> g 라고 선언하거나
+
